@@ -1,70 +1,53 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Ecodomus
 {
     public class Database
     {
-        private Dictionary<string, int> _data { get; set; }
+
+        private DbOperation _database = new();
+        private readonly DbTransaction _transaction = new();
 
         public Database()
-        {
-            _data = new Dictionary<string, int>();
-        }
+        {}
 
-        public Database(Database database)
+        public void Get(string key)
         {
-            _data = new Dictionary<string, int>(database._data);
+            _database.Get(key);
         }
 
         public void Set(string key, int value)
         {
-            _data[key] = value;
-        }
-
-        public void Get(string key)
-        {
-            Console.WriteLine(_data.ContainsKey(key) ?  _data[key] : "Null");
+            _database.Set(key, value);
         }
 
         public void Delete(string key)
         {
-            if(_data.ContainsKey(key))
-                _data.Remove(key);
+            _database.Delete(key);
         }
 
-        public void Count(int value)
+        public void Count(int val)
         {
-            Console.WriteLine(_data.Count( x => x.Value == value ));
+            _database.Count(val);
         }
 
-        public bool Equals(Database database)
+        public void Begin()
         {
-            if (_data.Keys.Count == database._data.Keys.Count)
-            {
-                foreach (string variable in _data.Keys)
-                {
-                    if (database._data.ContainsKey(variable)
-                            && database._data[variable] == _data[variable])
-                        continue;
-                    else
-                        return false;
-                }
-            }
-            else
-                return false;
-            return true;
+            _database = _transaction.Begin(_database);
         }
 
-        public override int GetHashCode()
+        public void Commit()
         {
-            unchecked
-            {
-                int hash = 15;
-                hash = hash * 18 + _data.GetHashCode();
-                return hash;
-            }
+            _database = _transaction.Commit(_database);
+        }
+
+        public void RollBack()
+        {
+            _database = _transaction.RollBack(_database);
         }
     }
 }
